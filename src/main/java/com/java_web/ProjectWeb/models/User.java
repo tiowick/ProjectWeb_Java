@@ -1,5 +1,8 @@
 package com.java_web.ProjectWeb.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // import javax.persistence.Column;
 // import javax.persistence.Entity;
 // import javax.persistence.GeneratedValue;
@@ -18,6 +21,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -53,7 +57,8 @@ public class User {
     @Size(groups = { CreateUser.class, UpdateUser.class }, min = 8, max = 60)
     private String password;
 
-    // private List<Task> tasks = new ArrayList<Task>();
+    @OneToMany(mappedBy = "user")
+    private List<Task> tasks = new ArrayList<Task>();
 
     public User() {
 
@@ -88,6 +93,23 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public static String getTableName() {
+        return TABLE_NAME;
+    }
+
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
+    }
+
+
+    
+
 
     @Override
     public int hashCode() {
@@ -126,4 +148,5 @@ public class User {
         return true;
     }
 
+    
 }
