@@ -3,6 +3,8 @@ package com.java_web.ProjectWeb.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 // import javax.persistence.Column;
 // import javax.persistence.Entity;
 // import javax.persistence.GeneratedValue;
@@ -99,6 +101,7 @@ public class User {
     }
 
 
+    @JsonIgnore
     public List<Task> getTasks() {
         return tasks;
     }
