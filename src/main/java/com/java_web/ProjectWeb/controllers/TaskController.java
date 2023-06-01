@@ -3,6 +3,8 @@ package com.java_web.ProjectWeb.controllers;
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,8 +21,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.java_web.ProjectWeb.models.Task;
 import com.java_web.ProjectWeb.services.TaskService;
 import com.java_web.ProjectWeb.services.UserService;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/task")

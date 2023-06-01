@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.java_web.ProjectWeb.models.User;
 //import com.java_web.ProjectWeb.repositories.TaskRepository;
 import com.java_web.ProjectWeb.repositories.UserRepository;
+import com.java_web.ProjectWeb.services.exceptions.DataBindingViolationException;
+import com.java_web.ProjectWeb.services.exceptions.ObjectNotFoundException;
 
 @Service
 public class UserService {
@@ -19,7 +21,7 @@ public class UserService {
 
     public User findById(Long id){
         Optional<User> user = this.userRepository.findById(id);
-        return user.orElseThrow(() -> new RuntimeException(
+        return user.orElseThrow(() -> new ObjectNotFoundException(
             "Usuário não encontrado! Id: " + id + "Tipos " + User.class.getName()
         ));
     }
@@ -45,8 +47,8 @@ public class UserService {
         try {
             this.userRepository.deleteById(id);
         } catch (Exception e) {
-            throw new RuntimeException("Não é possivel deletar pois há entidades relacionadas!");
-            // TODO: handle exception
+            throw new DataBindingViolationException("Não é possivel deletar pois há entidades relacionadas!");
+            
         }
     }
 

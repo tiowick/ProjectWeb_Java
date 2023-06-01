@@ -2,6 +2,8 @@ package com.java_web.ProjectWeb.controllers;
 
 import java.net.URI;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,8 +21,6 @@ import com.java_web.ProjectWeb.models.User;
 import com.java_web.ProjectWeb.models.User.CreateUser;
 import com.java_web.ProjectWeb.models.User.UpdateUser;
 import com.java_web.ProjectWeb.services.UserService;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/user")
