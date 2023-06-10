@@ -1,5 +1,6 @@
 package com.java_web.ProjectWeb.exceptions;
 
+
 import javax.validation.ConstraintViolationException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -8,28 +9,23 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.java_web.ProjectWeb.services.exceptions.DataBindingViolationException;
-import com.java_web.ProjectWeb.services.exceptions.ObjectNotFoundException;
-
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = "GLOBAL_EXCEPTION_HANDLER")
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
 
     @Value("${server.error.include-exception}")
     private boolean printStackTrace;
 
-    
     @Override
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -45,27 +41,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
         }
         return ResponseEntity.unprocessableEntity().body(errorResponse);
     }
-
-    /*
-     * @Override
-     * 
-     * @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-     * protected ResponseEntity<Object> handleMethodArgumentNotValid(
-     * MethodArgumentNotValidException methodArgumentNotValidException ex,
-     * HttpHeaders headers,
-     * HttpStatus status,
-     * WebRequest request) {
-     * ErrorResponse errorResponse = new ErrorResponse(
-     * HttpStatus.UNPROCESSABLE_ENTITY.value(),
-     * "Validation error. Check 'errors' field for details.");
-     * for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-     * errorResponse.addValidationError(fieldError.getField(),
-     * fieldError.getDefaultMessage());
-     * }
-     * return ResponseEntity.unprocessableEntity().body(errorResponse);
-     * }
-     */
-
+    
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Object> handleAllUncaughtException(
@@ -80,18 +56,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
                 request);
     }
 
-    private ResponseEntity<Object> buildErrorResponse(
-            Exception exception,
-            String message,
-            HttpStatus httpStatus,
+    // 422
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<Object> handleConstraintViolationException(
+            ConstraintViolationException constraintViolationException,
             WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(httpStatus.value(), message);
-        if (this.printStackTrace) {
-            errorResponse.setStackTrace(ExceptionUtils.getStackTrace(exception));
-        }
-        return ResponseEntity.status(httpStatus).body(errorResponse);
+        log.error("Failed to validate element", constraintViolationException);
+        return buildErrorResponse(
+                constraintViolationException,
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                request);
     }
 
+    private ResponseEntity<Object> buildErrorResponse(
+            Exception exception,
+            HttpStatus httpStatus,
+            WebRequest request) {
+        return buildErrorResponse(exception, exception.getMessage(), httpStatus, request);
+    }
+
+    // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<Object> handleDataIntegrityViolationException(
@@ -106,47 +91,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
                 request);
     }
 
-    @ExceptionHandler(ObjectNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleObjectNotFoundException(
-            ObjectNotFoundException objectNotFoundException,
-            WebRequest request) {
-        log.error("Failed to find the requested element", objectNotFoundException);
-        return buildErrorResponse(
-                objectNotFoundException,
-                HttpStatus.NOT_FOUND,
-                request);
-    }
-
     private ResponseEntity<Object> buildErrorResponse(
-            Exception exception,
-            HttpStatus httpStatus,
-            WebRequest request) {
-        return buildErrorResponse(exception, exception.getMessage(), httpStatus, request);
+        Exception exception,
+        String message,
+        HttpStatus httpStatus,
+        WebRequest request) {
+    ErrorResponse errorResponse = new ErrorResponse(httpStatus.value(), message);
+    if (this.printStackTrace) {
+        errorResponse.setStackTrace(ExceptionUtils.getStackTrace(exception));
     }
+    return ResponseEntity.status(httpStatus).body(errorResponse);
+}
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public ResponseEntity<Object> handleConstraintViolationException(
-            ConstraintViolationException constraintViolationException,
-            WebRequest request) {
-        log.error("Failed to validate element", constraintViolationException);
-        return buildErrorResponse(
-                constraintViolationException,
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                request);
-    }
 
-    @ExceptionHandler(DataBindingViolationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<Object> handleDataBindingViolationException(
-            DataBindingViolationException dataBindingViolationException,
-            WebRequest request) {
-        log.error("Failed to save entity with associated data", dataBindingViolationException);
-        return buildErrorResponse(
-                dataBindingViolationException,
-                HttpStatus.CONFLICT,
-                request);
-    }
 
 }
